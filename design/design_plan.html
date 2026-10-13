@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프롬프트 다듬기 도구 — 설계 컨펌 문서</title>
+<style>
+  :root {
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+    --accent: #10B981;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    line-height: 1.7;
+    padding: 40px 20px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* Header */
+  .doc-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 40px;
+    margin-bottom: 32px;
+  }
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+  .doc-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .doc-header p  { opacity: 0.85; font-size: 15px; }
+  .doc-meta { margin-top: 20px; display: flex; gap: 24px; font-size: 13px; opacity: 0.8; }
+  .doc-meta span::before { content: "▸ "; }
+
+  /* Section */
+  .section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gray-200);
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+    margin-bottom: 20px;
+  }
+  .section p { color: var(--gray-700); margin-bottom: 12px; }
+
+  /* 목표/범위 카드 */
+  .goal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .goal-card {
+    background: var(--primary-light);
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid var(--primary);
+  }
+  .goal-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .goal-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .goal-card p  { font-size: 13px; color: var(--gray-700); margin: 0; }
+
+  /* 흐름도 */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .flow-step {
+    background: var(--primary-light);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 130px;
+    flex: 1;
+  }
+  .flow-step .num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .flow-step .label { font-size: 14px; font-weight: 600; }
+  .flow-step .sub   { font-size: 12px; color: var(--gray-700); margin-top: 4px; }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--primary);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  /* 기능 목록 */
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+  }
+  .feature-list li .tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .tag-core    { background: #DBEAFE; color: #1D4ED8; }
+  .tag-enhance { background: #D1FAE5; color: #065F46; }
+  .tag-future  { background: #FEF3C7; color: #92400E; }
+  .feature-list li .desc { font-size: 14px; color: var(--gray-700); }
+  .feature-list li .desc strong { color: var(--gray-900); }
+
+  /* UI 와이어프레임 */
+  .wireframe {
+    background: var(--gray-100);
+    border: 2px dashed var(--gray-200);
+    border-radius: 8px;
+    padding: 24px;
+    font-family: monospace;
+  }
+  .wf-bar {
+    background: var(--primary);
+    color: white;
+    border-radius: 6px 6px 0 0;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .wf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .wf-box {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--gray-700);
+  }
+  .wf-box .wf-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px; letter-spacing: 0.05em; }
+  .wf-box .wf-placeholder {
+    background: var(--gray-100);
+    height: 80px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9CA3AF;
+    font-size: 12px;
+  }
+  .wf-btn {
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-block;
+    margin-top: 8px;
+    cursor: default;
+  }
+  .wf-crof-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .wf-crof-item {
+    background: white;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .wf-crof-item .crof-key {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary);
+  }
+  .wf-crof-item .crof-name { color: var(--gray-700); font-size: 11px; margin-top: 2px; }
+
+  /* 기술 스택 */
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .tech-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .tech-card .tech-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .tech-card .tech-desc { font-size: 12px; color: var(--gray-700); }
+
+  /* 컨펌 체크리스트 */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .check-q { background: #FFF7ED; border: 1px solid #FED7AA; }
+  .check-q::before { content: "❓"; flex-shrink: 0; }
+  .check-note { background: #F0FDF4; border: 1px solid #BBF7D0; }
+  .check-note::before { content: "✅"; flex-shrink: 0; }
+
+  /* 결정 필요 배너 */
+  .decision-banner {
+    background: #FFFBEB;
+    border: 2px solid #F59E0B;
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .decision-banner h3 { color: #92400E; margin-bottom: 12px; font-size: 16px; }
+  .decision-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .decision-list li {
+    padding-left: 20px;
+    position: relative;
+    color: var(--gray-700);
+    font-size: 14px;
+  }
+  .decision-list li::before { content: "▸"; position: absolute; left: 0; color: var(--warn); }
+
+  hr { border: none; border-top: 1px solid var(--gray-200); margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 헤더 -->
+  <div class="doc-header">
+    <div class="badge">설계 컨펌 문서 v0.1</div>
+    <h1>AI 프롬프트 다듬기 도구</h1>
+    <p>막연한 요청을 명확한 AI 지시문으로 변환하는 웹 도구 — 작동 방식 및 설계 검토</p>
+    <div class="doc-meta">
+      <span>작성일: 2026-10-13</span>
+      <span>기반 자료: prompt_refinement_guide.md</span>
+      <span>최종 산출물: output/index.html</span>
+    </div>
+  </div>
+
+  <!-- 결정 필요 사항 (상단 강조) -->
+  <div class="decision-banner">
+    <h3>⚠ 컨펌 전 결정이 필요한 항목</h3>
+    <ul class="decision-list">
+      <li><strong>AI 연동 여부</strong> — 실제 AI API를 호출해 자동 변환할지, 아니면 가이드라인 기반 수동 작성 보조 도구로만 만들지</li>
+      <li><strong>모드 구성</strong> — "빠른 변환(딕셔너리 기반)" 모드와 "전체 템플릿 작성" 모드를 둘 다 제공할지, 하나만 할지</li>
+      <li><strong>저장 기능</strong> — 작성한 프롬프트를 브라우저 localStorage에 저장(히스토리)할지 여부</li>
+      <li><strong>언어</strong> — UI 전체를 한국어로만 할지, 영문 병기 여부</li>
+    </ul>
+  </div>
+
+  <!-- 1. 도구 목표 -->
+  <div class="section">
+    <div class="section-title">1. 도구의 목표</div>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <div class="icon">🎯</div>
+        <h3>핵심 목표</h3>
+        <p>머릿속의 거친 생각을 AI가 즉시 이해할 수 있는 고품질 프롬프트로 빠르게 변환</p>
+      </div>
+      <div class="goal-card">
+        <div class="icon">📐</div>
+        <h3>원칙 기반</h3>
+        <p>C-R-O-F-T 5대 원칙을 UI에 내재화해 자연스럽게 학습하면서 사용</p>
+      </div>
+      <div class="goal-card">
+        <div class="icon">⚡</div>
+        <h3>즉각적 사용</h3>
+        <p>별도 설치 없이 브라우저에서 바로 사용. 서버 없이 순수 HTML/JS로 동작</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 작동 흐름 -->
+  <div class="section">
+    <div class="section-title">2. 작동 흐름 (User Journey)</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="num">STEP 1</div>
+        <div class="label">거친 생각 입력</div>
+        <div class="sub">자유롭게 메모 형태로</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="num">STEP 2</div>
+        <div class="label">C-R-O-F-T 안내</div>
+        <div class="sub">각 항목 힌트 제공</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="num">STEP 3</div>
+        <div class="label">세부 항목 채우기</div>
+        <div class="sub">5가지 요소 입력</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="num">STEP 4</div>
+        <div class="label">완성 프롬프트 생성</div>
+        <div class="sub">조합 결과 즉시 확인</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="num">STEP 5</div>
+        <div class="label">복사 & 사용</div>
+        <div class="sub">클립보드 원클릭 복사</div>
+      </div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:#6B7280;">※ 선택 기능: 완성 프롬프트를 로컬 히스토리에 저장해 재사용 가능</p>
+  </div>
+
+  <!-- 3. 핵심 기능 -->
+  <div class="section">
+    <div class="section-title">3. 기능 목록</div>
+    <ul class="feature-list">
+      <li>
+        <span class="tag tag-core">핵심</span>
+        <div class="desc"><strong>거친 메모 입력 영역</strong> — 자유 텍스트로 원하는 것을 아무렇게나 적는 시작점</div>
+      </li>
+      <li>
+        <span class="tag tag-core">핵심</span>
+        <div class="desc"><strong>C-R-O-F-T 구조화 입력 패널</strong> — Context / Role / Objective / Format / Tone 각각 입력칸 + 예시 힌트</div>
+      </li>
+      <li>
+        <span class="tag tag-core">핵심</span>
+        <div class="desc"><strong>완성 프롬프트 실시간 미리보기</strong> — 입력할 때마다 조합된 결과를 즉시 표시</div>
+      </li>
+      <li>
+        <span class="tag tag-core">핵심</span>
+        <div class="desc"><strong>원클릭 복사</strong> — 완성 프롬프트를 클립보드에 바로 복사</div>
+      </li>
+      <li>
+        <span class="tag tag-core">핵심</span>
+        <div class="desc"><strong>모호한 표현 변환 사전 패널</strong> — "이것 좀 잘 써줘" 같은 모호한 표현 예시와 개선 예시 상시 참조</div>
+      </li>
+      <li>
+        <span class="tag tag-enhance">확장</span>
+        <div class="desc"><strong>3단계 워크플로 체크리스트</strong> — 동사 구체화 / 정량화 / Negative Prompt 가이드를 체크하며 진행</div>
+      </li>
+      <li>
+        <span class="tag tag-enhance">확장</span>
+        <div class="desc"><strong>히스토리 저장</strong> — localStorage에 최근 10개 프롬프트 저장·불러오기</div>
+      </li>
+      <li>
+        <span class="tag tag-future">추후 고려</span>
+        <div class="desc"><strong>AI 자동 변환</strong> — Claude API를 연결해 거친 메모를 자동으로 C-R-O-F-T 형식으로 변환 제안</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 4. UI 구조 와이어프레임 -->
+  <div class="section">
+    <div class="section-title">4. UI 구조 (개략 와이어프레임)</div>
+    <div class="wireframe">
+      <div class="wf-bar">🛠 AI 프롬프트 다듬기 도구</div>
+
+      <!-- C-R-O-F-T 탭 -->
+      <div style="font-size:12px; color:#6B7280; margin-bottom:8px;">[ C-R-O-F-T 입력 패널 ]</div>
+      <div class="wf-crof-row">
+        <div class="wf-crof-item"><div class="crof-key">C</div><div class="crof-name">Context<br>배경·상황</div></div>
+        <div class="wf-crof-item"><div class="crof-key">R</div><div class="crof-name">Role<br>역할 정의</div></div>
+        <div class="wf-crof-item"><div class="crof-key">O</div><div class="crof-name">Objective<br>구체적 목표</div></div>
+        <div class="wf-crof-item"><div class="crof-key">F</div><div class="crof-name">Format<br>출력 형식</div></div>
+        <div class="wf-crof-item"><div class="crof-key">T</div><div class="crof-name">Tone<br>어조·제약</div></div>
+      </div>
+
+      <div class="wf-row">
+        <div class="wf-box">
+          <div class="wf-label">거친 메모 입력</div>
+          <div class="wf-placeholder">아무렇게나 적어보세요...</div>
+        </div>
+        <div class="wf-box">
+          <div class="wf-label">완성 프롬프트 미리보기</div>
+          <div class="wf-placeholder">자동으로 조합됩니다</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="wf-btn">📋 복사하기</div>
+        <div class="wf-btn" style="background:#10B981;">🔄 초기화</div>
+        <div class="wf-btn" style="background:#6B7280;">💾 저장</div>
+        <span style="font-size:12px; color:#9CA3AF; margin-left:8px;">← 버튼 구성 확정 필요</span>
+      </div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:#6B7280;">※ 오른쪽 패널 하단에 "모호한 표현 변환 사전" 접었다 펼치기(accordion) 형태로 배치 예정</p>
+  </div>
+
+  <!-- 5. 기술 방식 -->
+  <div class="section">
+    <div class="section-title">5. 기술 방식</div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-name">순수 HTML/CSS/JS</div>
+        <div class="tech-desc">외부 라이브러리·서버·빌드 불필요. 파일 하나로 동작</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">실시간 미리보기</div>
+        <div class="tech-desc">JavaScript 이벤트 리스너로 입력 즉시 결과 반영</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">localStorage</div>
+        <div class="tech-desc">히스토리 저장 시 브라우저 내장 저장소 활용 (서버 불필요)</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Clipboard API</div>
+        <div class="tech-desc">원클릭 복사를 위한 Web Clipboard API 사용</div>
+      </div>
+    </div>
+    <p style="margin-top:16px; font-size:14px; color:var(--gray-700);">
+      최종 산출물은 <code>output/index.html</code> 단일 파일로 제공됩니다.
+      브라우저에서 파일을 직접 열거나, 간단한 로컬 서버(VS Code Live Server 등)로 실행 가능합니다.
+    </p>
+  </div>
+
+  <!-- 6. 컨펌 체크리스트 -->
+  <div class="section">
+    <div class="section-title">6. 컨펌 체크리스트</div>
+    <ul class="checklist">
+      <li class="check-note">C-R-O-F-T 5대 원칙을 UI 구조의 핵심 축으로 사용 — <em>가이드 자료와 일치</em></li>
+      <li class="check-note">모호한 표현 변환 사전 테이블을 참조 패널로 상시 노출 — <em>가이드 자료 §2 활용</em></li>
+      <li class="check-note">완성 프롬프트는 가이드의 "실전 교정 템플릿" 형식을 따라 자동 조합</li>
+      <li class="check-note">단일 HTML 파일 — 설치 없이 바로 사용 가능</li>
+      <li class="check-q" style="display:flex; gap:12px;">
+        <span>AI API 연동: 우선 미포함으로 제작 후, 추후 Claude API 키 입력란 추가 방식으로 확장 예정 — <strong>이 방향으로 진행해도 되나요?</strong></span>
+      </li>
+      <li class="check-q" style="display:flex; gap:12px;">
+        <span>히스토리(저장) 기능: 포함 / 미포함 중 선택이 필요합니다.</span>
+      </li>
+      <li class="check-q" style="display:flex; gap:12px;">
+        <span>레이아웃: 좌(입력) / 우(결과) 2단 분할 방식 vs 상(입력)→하(결과) 1단 방식 — 어느 쪽이 편하신가요?</span>
+      </li>
+    </ul>
+  </div>
+
+  <div style="text-align:center; color:#9CA3AF; font-size:13px; padding: 24px 0;">
+    설계 문서 / design/design_plan.html · 컨펌 후 output/ 디렉토리에 최종 도구 제작 시작
+  </div>
+
+</div>
+</body>
+</html>
